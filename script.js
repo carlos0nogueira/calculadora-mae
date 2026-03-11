@@ -16,11 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Inputs
     const sliderCasa = document.getElementById('slider-casa');
+    const inputCasa = document.getElementById('input-casa');
     const sliderEmprestimo = document.getElementById('slider-emprestimo');
     const inputPrazo = document.getElementById('input-prazo');
     const inputJuro = document.getElementById('input-juro');
     // Displays
-    const displayCasa = document.getElementById('display-casa');
     const displayEmprestimo = document.getElementById('display-emprestimo');
     const valMinimoEmprestimo = document.getElementById('val-minimo-emprestimo');
     const displayCustoTotal = document.getElementById('display-custo-total');
@@ -38,11 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Filho Inputs
     const sliderCasaFilho = document.getElementById('slider-casa-filho');
+    const inputCasaFilho = document.getElementById('input-casa-filho');
     const sliderEmprestimoFilho = document.getElementById('slider-emprestimo-filho');
     const inputPrazoFilho = document.getElementById('input-prazo-filho');
     const inputJuroFilho = document.getElementById('input-juro-filho');
     // Filho Displays
-    const displayCasaFilho = document.getElementById('display-casa-filho');
     const displayCapitaisRestantes = document.getElementById('display-capitais-restantes');
     const displayMaxOrcamento = document.getElementById('display-max-orcamento');
     const breakdownRestantes = document.getElementById('breakdown-restantes');
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 high = mid;
             }
         }
-        return Math.floor(maxAff / 500) * 500;
+        return Math.floor(maxAff);
     };
 
     const getCustoTotalSimuladoFilho = (valorCasaFilho) => {
@@ -138,11 +138,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 high = mid;
             }
         }
-        return Math.floor(maxAff / 500) * 500;
+        return Math.floor(maxAff);
+    };
+
+    const formatInputNumber = (val) => {
+        // Remove tudo o que não é dígito
+        let clean = val.replace(/\D/g, '');
+        if (clean === '') return '';
+        // Formata com espaços para milhares
+        return new Intl.NumberFormat('pt-PT', { useGrouping: true }).format(parseInt(clean)).replace(/\./g, ' ');
+    };
+
+    const parseInputValue = (val) => {
+        return parseFloat(val.replace(/\s/g, '')) || 0;
     };
 
     const updateCalculations = (source) => {
-        const valorCasa = parseFloat(sliderCasa.value);
+        let valorCasa = parseFloat(sliderCasa.value);
+        if (source === 'input-casa') {
+            valorCasa = parseInputValue(inputCasa.value);
+            sliderCasa.value = valorCasa;
+            inputCasa.value = formatInputNumber(inputCasa.value);
+        } else {
+            inputCasa.value = formatInputNumber(valorCasa.toString());
+        }
+
         let valorEmprestimo = parseFloat(sliderEmprestimo.value);
         const prazoAnos = parseFloat(inputPrazo.value);
         const taxaJuro = parseFloat(inputJuro.value);
@@ -154,22 +174,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const custoTotalHabitacao = valorCasa + imt + impostoSelo + custosEscritura;
 
         // --- 2. Lógica do Empréstimo Mínimo ---
-        // A pessoa PRECISA pedir dinheiro ao banco se o custo for maior que os capitais próprios
         const neededLoan = Math.ceil(custoTotalHabitacao - CAPITAIS_PROPRIOS);
         const minEmprestimo = Math.max(0, neededLoan);
 
-        // Atualiza o minímo permitido no slider e no label
         sliderEmprestimo.min = minEmprestimo;
         labelMinEmp.innerText = formatShortCurrency(minEmprestimo);
 
-        // Força o valor do empréstimo a não descer abaixo do mínimo
-        if (valorEmprestimo < minEmprestimo) {
+        // ACOPLAMENTO MÃE: Se alteramos a casa, ou se o empréstimo descera abaixo do mínimo, forçamos o mínimo.
+        if (source === 'casa' || source === 'input-casa' || valorEmprestimo < minEmprestimo) {
             valorEmprestimo = minEmprestimo;
             sliderEmprestimo.value = valorEmprestimo;
         }
 
         // --- 3. Atualizar Vista (DOM) ---
-        displayCasa.innerText = formatCurrency(valorCasa);
         displayCustoTotal.innerText = formatCurrency(custoTotalHabitacao);
         
         breakdownImovel.innerText = formatCurrency(valorCasa);
@@ -201,31 +218,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const capitaisRestantes = Math.max(0, CAPITAIS_PROPRIOS - capitalGastoMae);
         
         // Empréstimo máximo que o filho está disposto a pedir (teto global)
-        const maxEmprestimoAdmitidoFilho = parseFloat(sliderEmprestimoFilho.value);
+        const valorEmprestimoFilho = parseFloat(sliderEmprestimoFilho.value);
         const prazoAnosFilho = parseFloat(inputPrazoFilho.value);
         const taxaJuroFilho = parseFloat(inputJuroFilho.value);
         
-        const poderCompraTotal = capitaisRestantes + maxEmprestimoAdmitidoFilho;
+        const poderCompraTotal = capitaisRestantes + valorEmprestimoFilho;
         
-        // Lógica de restrição do slider do Filho
+        // Lógica de restrição do slider do Filho (Poder de Compra)
         const maxAffordableCasa = Math.max(0, calculateMaxHousePriceFilho(poderCompraTotal));
-        const newMinCasa = Math.min(50000, maxAffordableCasa);
+        const newMinCasa = 50000;
         
-        sliderCasaFilho.max = maxAffordableCasa;
+        // Atualiza os limites do slider de casa do filho sem "quebrar" se max < min
         sliderCasaFilho.min = newMinCasa;
+        sliderCasaFilho.max = Math.max(newMinCasa, maxAffordableCasa);
+        
+        // ACOPLAMENTO: Se o utilizador aumenta o empréstimo, aumentamos o valor da casa para o máximo
+        if (source === 'emp-filho') {
+            sliderCasaFilho.value = maxAffordableCasa;
+        }
         
         let valorCasaFilho = parseFloat(sliderCasaFilho.value);
+        if (source === 'input-casa-filho') {
+            valorCasaFilho = parseInputValue(inputCasaFilho.value);
+            sliderCasaFilho.value = valorCasaFilho;
+            inputCasaFilho.value = formatInputNumber(inputCasaFilho.value);
+        } else {
+            inputCasaFilho.value = formatInputNumber(valorCasaFilho.toString());
+        }
+
         if (valorCasaFilho > maxAffordableCasa) {
             valorCasaFilho = maxAffordableCasa;
             sliderCasaFilho.value = valorCasaFilho;
-        } else if (valorCasaFilho < newMinCasa) {
-            valorCasaFilho = newMinCasa;
-            sliderCasaFilho.value = valorCasaFilho;
+            inputCasaFilho.value = formatInputNumber(valorCasaFilho.toString());
         }
+
+        // Ajuste dinâmico de largura para os inputs não "dançarem"
+        inputCasa.style.width = ((inputCasa.value.length || 1) + 0.5) + 'ch';
+        inputCasaFilho.style.width = ((inputCasaFilho.value.length || 1) + 0.5) + 'ch';
 
         const labelsCasaFilho = document.querySelectorAll('#slider-casa-filho + .range-labels span');
         if (labelsCasaFilho.length === 2) {
-            labelsCasaFilho[0].innerText = formatShortCurrency(newMinCasa);
             labelsCasaFilho[1].innerText = formatShortCurrency(maxAffordableCasa);
         }
 
@@ -234,8 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const impostoSeloFilho = valorCasaFilho * 0.008;
         const custosEscrituraFilho = 1000;
         
-        // Calculo das Mais Valias
-        // Baseado na exclusividade da habitação do filho face aos capitais iniciais
+        // Calculo das Mais Valias (Mantendo a lógica original conforme pedido)
         let impostosMaisValias = 0;
         if (valorCasaFilho < CAPITAIS_PROPRIOS) {
             const valorNaoReinvestido = CAPITAIS_PROPRIOS - valorCasaFilho;
@@ -244,21 +275,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const custoTotalHabitacaoFilho = valorCasaFilho + imtFilho + impostoSeloFilho + custosEscrituraFilho;
         const custoEfetivoFinal = custoTotalHabitacaoFilho + impostosMaisValias;
-        
-        // O filho pega estritamente o empréstimo necessário
-        // MAS NUNCA ultrapassando o máximo aprovado ajustado pelo Slider
-        const limitNecessidade = Math.max(0, custoEfetivoFinal - capitaisRestantes);
-        const valorEmprestimoFilho = Math.min(limitNecessidade, maxEmprestimoAdmitidoFilho);
 
         // Atualiza Dom do Filho
         const breakdownMaisValias = document.getElementById('breakdown-mais-valias');
         const breakdownCustoEfetivo = document.getElementById('breakdown-custo-efetivo');
         
-        displayCapitaisRestantes.innerText = formatCurrency(capitaisRestantes);
-        displayCasaFilho.innerText = formatCurrency(valorCasaFilho);
+        // SALDO FINAL: O que sobra após AMBAS as compras (Mãe e Filho)
+        const capitalEfetivoFilho = Math.max(0, custoEfetivoFinal - valorEmprestimoFilho);
+        const saldoFinal = Math.max(0, capitaisRestantes - capitalEfetivoFilho);
+
+        displayCapitaisRestantes.innerText = formatCurrency(saldoFinal);
         displayEmprestimoFilho.innerText = formatCurrency(valorEmprestimoFilho);
         
-        displayMaxOrcamento.innerText = formatCurrency(custoTotalHabitacaoFilho);
+        // Headline mostra o custo efetivo final (com mais valias)
+        displayMaxOrcamento.innerText = formatCurrency(custoEfetivoFinal);
+        
         breakdownImovelFilho.innerText = formatCurrency(valorCasaFilho);
         breakdownImtFilho.innerText = formatCurrency(imtFilho);
         breakdownIsFilho.innerText = formatCurrency(impostoSeloFilho);
@@ -267,9 +298,10 @@ document.addEventListener('DOMContentLoaded', () => {
         breakdownCustoFinalFilho.innerText = formatCurrency(custoTotalHabitacaoFilho);
         if (breakdownCustoEfetivo) breakdownCustoEfetivo.innerText = formatCurrency(custoEfetivoFinal);
 
+        // Resumo final mostra a soma real (Capital da Mãe + Empréstimo Pedido)
         breakdownRestantes.innerText = formatCurrency(capitaisRestantes);
         breakdownEmpFilho.innerText = formatCurrency(valorEmprestimoFilho);
-        breakdownPoderTotal.innerText = formatCurrency(poderCompraTotal);
+        breakdownPoderTotal.innerText = formatCurrency(capitaisRestantes + valorEmprestimoFilho);
         
         // Prestação Filho
         let prestacaoFilho = 0;
@@ -288,11 +320,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Events
     sliderCasa.addEventListener('input', () => updateCalculations('casa'));
+    inputCasa.addEventListener('input', () => updateCalculations('input-casa'));
     sliderEmprestimo.addEventListener('input', () => updateCalculations('emprestimo'));
     inputPrazo.addEventListener('input', () => updateCalculations('prazo'));
     inputJuro.addEventListener('input', () => updateCalculations('juro'));
 
     sliderCasaFilho.addEventListener('input', () => updateCalculations('casa-filho'));
+    inputCasaFilho.addEventListener('input', () => updateCalculations('input-casa-filho'));
     sliderEmprestimoFilho.addEventListener('input', () => updateCalculations('emp-filho'));
     inputPrazoFilho.addEventListener('input', () => updateCalculations('prazo-filho'));
     inputJuroFilho.addEventListener('input', () => updateCalculations('juro-filho'));
