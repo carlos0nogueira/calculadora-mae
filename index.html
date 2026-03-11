@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Imóvel Mãe</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="dark-mode">
+    <div class="app-container">
+        <header style="margin-bottom: 0.5rem;">
+            <button class="dark-mode-toggle" id="theme-toggle" title="Alternar Modo Escuro">
+                <i class="ph ph-sun"></i>
+            </button>
+        </header>
+
+        <div class="main-layout-grid">
+            <!-- COLUNA DA MÃE -->
+            <div class="col-mae">
+                <header style="margin-top: 0; margin-bottom: 1rem;">
+                    <h1><i class="ph ph-house-line"></i> O Novo Lar da Mãe</h1>
+                    <p>Simulador para a 1ª habitação</p>
+                </header>
+
+                <div class="grid-container">
+                    <!-- Card 2: Valor da Casa (CASA MÃE) -->
+                    <section class="card slider-card">
+                        <h2><i class="ph ph-currency-eur"></i> Valor da Casa (CASA MÃE)</h2>
+                        <div class="amount highlight" id="display-casa">150.000 €</div>
+                        <input type="range" id="slider-casa" min="50000" max="400000" step="500" value="150000">
+                        <div class="range-labels">
+                            <span>50k</span><span>400k</span>
+                        </div>
+                    </section>
+        
+                    <!-- Card 1: Capitais Próprios -->
+                    <section class="card summary-card glow">
+                        <h2><i class="ph ph-piggy-bank"></i> Capitais Próprios</h2>
+                        <div class="amount" id="display-capitais">155.000 €</div>
+                        <div class="details">145.000€ (Venda) + 10.000€ (Poupança)</div>
+                    </section>
+        
+                    <!-- Card 3: Custo Total da Habitação -->
+                    <section class="card breakdown-card">
+                        <h2><i class="ph ph-receipt"></i> Custo Total da Habitação</h2>
+                        <div class="amount" id="display-custo-total">0 €</div>
+                        <ul class="breakdown-list">
+                            <li><span>Valor do Imóvel</span><span id="breakdown-imovel">0 €</span></li>
+                            <li><span>IMT</span><span id="breakdown-imt">0 €</span></li>
+                            <li><span>Imposto de Selo (0.8%)</span><span id="breakdown-is">0 €</span></li>
+                            <li><span>Escritura / Registo (Est.)</span><span id="breakdown-escritura">1.000 €</span></li>
+                            <div class="divider"></div>
+                            <li class="total"><span>Total Necessário</span><span id="breakdown-total">0 €</span></li>
+                        </ul>
+                    </section>
+        
+                    <!-- Card 4: Financiamento Bancário -->
+                    <section class="card financing-card">
+                        <h2><i class="ph ph-bank"></i> Financiamento Bancário</h2>
+                        
+                        <div class="info-badge">
+                            Mínimo necessário: <span id="val-minimo-emprestimo">0 €</span>
+                        </div>
+                        
+                        <div class="input-group slide-group">
+                            <label>Quanto Dinheiro vai pedir ao banco?</label>
+                            <div class="amount small" id="display-emprestimo">0 €</div>
+                            <input type="range" id="slider-emprestimo" min="0" max="300000" step="500" value="0">
+                            <div class="range-labels dynamic-min" id="labels-emprestimo">
+                                <span id="label-min-emp">0</span><span>300k</span>
+                            </div>
+                        </div>
+        
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label>Prazo do Crédito</label>
+                                <div class="input-with-suffix">
+                                    <input type="number" id="input-prazo" min="5" max="22" value="22" step="1">
+                                    <span class="suffix">anos</span>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Taxa de Juro</label>
+                                <div class="input-with-suffix">
+                                    <input type="number" id="input-juro" min="0.5" max="10" value="4.0" step="0.1">
+                                    <span class="suffix">%</span>
+                                </div>
+                            </div>
+                        </div>
+        
+                        <div class="result-box">
+                            <h3>Prestações Mensais</h3>
+                            <div class="prestacao-value" id="display-prestacao">0 € / mês</div>
+                            <p class="calc-note">Taxa variável (Euribor 3M + Spread)</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- COLUNA DO FILHO -->
+            <div class="col-filho theme-sage">
+                <header style="margin-top: 0; margin-bottom: 1rem;">
+                    <h1><i class="ph ph-house"></i> O Novo Lar do Filho</h1>
+                    <p>Simulador para a 2ª habitação</p>
+                </header>
+        
+                <div class="grid-container son-theme">
+                    <!-- Card 5: Custo da Casa (Filho) -->
+                    <section class="card slider-card">
+                        <h2><i class="ph ph-currency-eur"></i> Valor da Casa (CASA FILHO)</h2>
+                        <div class="amount highlight" id="display-casa-filho">50.000 €</div>
+                        <input type="range" id="slider-casa-filho" min="50000" max="300000" step="500" value="50000">
+                        <div class="range-labels">
+                            <span>50k</span><span>300k</span>
+                        </div>
+                    </section>
+        
+                    <!-- Card 6: Capitais Próprios Restantes -->
+                    <section class="card summary-card glow">
+                        <h2><i class="ph ph-wallet"></i> Capitais Próprios Restantes</h2>
+                        <div class="amount" id="display-capitais-restantes">0 €</div>
+                        <div class="details">O que sobra após o investimento da mãe</div>
+                    </section>
+        
+                    <!-- Card 7: Orçamento Máximo e Impostos -->
+                    <section class="card breakdown-card">
+                        <h2><i class="ph ph-receipt"></i> Custo Total (Filho)</h2>
+                        <div class="amount" id="display-max-orcamento">0 €</div>
+                        <ul class="breakdown-list">
+                            <li><span>Valor do Imóvel</span><span id="breakdown-imovel-filho">0 €</span></li>
+                            <li><span>IMT</span><span id="breakdown-imt-filho">0 €</span></li>
+                            <li><span>Imposto de Selo</span><span id="breakdown-is-filho">0 €</span></li>
+                            <li><span>Escritura</span><span id="breakdown-escritura-filho">1.000 €</span></li>
+                            <div class="divider"></div>
+                            <li class="total"><span>Custo Habitação</span><span id="breakdown-custo-final-filho">0 €</span></li>
+                            <li style="color: #ef4444; font-weight: 600;"><span>+ Mais Valias (Retidas)</span><span id="breakdown-mais-valias">0 €</span></li>
+                            <div class="divider"></div>
+                            <li class="total"><span>Custo Efetivo Final</span><span id="breakdown-custo-efetivo">0 €</span></li>
+                            <div class="divider"></div>
+                            <li><span>O que sobra da Mãe</span><span id="breakdown-restantes">0 €</span></li>
+                            <li><span>Empréstimo Pedido</span><span id="breakdown-emp-filho">0 €</span></li>
+                            <li class="total" style="margin-top: 5px;"><span>Poder de Compra</span><span id="breakdown-poder-total">0 €</span></li>
+                        </ul>
+                    </section>
+        
+                    <!-- Card 8: Financiamento Bancário (Filho) -->
+                    <section class="card financing-card">
+                        <h2><i class="ph ph-bank"></i> Financiamento Bancário (Filho)</h2>
+                        
+                        <div class="info-badge">
+                            Máximo aprovado: <span>105.000 €</span>
+                        </div>
+                        
+                        <div class="input-group slide-group">
+                            <label>Quanto Dinheiro vai pedir ao banco?</label>
+                            <div class="amount small" id="display-emprestimo-filho">0 €</div>
+                            <input type="range" id="slider-emprestimo-filho" min="0" max="105000" step="500" value="105000">
+                            <div class="range-labels">
+                                <span>0</span><span>105k</span>
+                            </div>
+                        </div>
+        
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label>Prazo do Crédito</label>
+                                <div class="input-with-suffix">
+                                    <input type="number" id="input-prazo-filho" min="5" max="40" value="40" step="1">
+                                    <span class="suffix">anos</span>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Taxa de Juro</label>
+                                <div class="input-with-suffix">
+                                    <input type="number" id="input-juro-filho" min="0.5" max="10" value="4.0" step="0.1">
+                                    <span class="suffix">%</span>
+                                </div>
+                            </div>
+                        </div>
+        
+                        <div class="result-box">
+                            <h3>Prestações Mensais</h3>
+                            <div class="prestacao-value" id="display-prestacao-filho">0 € / mês</div>
+                            <p class="calc-note">Taxa variável (Euribor 3M + Spread)</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
